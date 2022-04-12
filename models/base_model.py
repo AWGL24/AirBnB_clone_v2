@@ -8,11 +8,7 @@ from sqlalchemy import Column, String, DateTime
 from sqlalchemy.ext.declarative import declarative_base
 
 
-if getenv('HBNB_TYPE_STORAGE') == 'db':
-    Base = declarative_base()
-
-else:
-    Base = object
+Base = declarative_base()
 
 
 class BaseModel:
@@ -32,9 +28,13 @@ class BaseModel:
                                                      '%Y-%m-%dT%H:%M:%S.%f')
             kwargs['created_at'] = datetime.strptime(kwargs['created_at'],
                                                      '%Y-%m-%dT%H:%M:%S.%f')
-            if '__class__' in kwargs:
-                del kwargs['__class__']
+            del kwargs['__class__']
             self.__dict__.update(kwargs)
+
+    def __str__(self):
+        """Returns a string representation of the instance"""
+        cls = (str(type(self)).split('.')[-1]).split('\'')[0]
+        return '[{}] ({}) {}'.format(cls, self.id, self.__dict__)
 
     def save(self):
         """Updates updated_at with current time when instance is changed"""
@@ -44,19 +44,13 @@ class BaseModel:
 
     def to_dict(self):
         """Convert instance into dict format"""
-        dictionary = {}
-        dictionary.update(self.__dict__)
-        dictionary.update({'__class__':
-                           (str(type(self)).split('.')[-1]).split('\'')[0]})
+        dictionary = self.__dict__.copy
+        dictionary.pop('_sa_instance_state', None)
         dictionary['created_at'] = self.created_at.isoformat()
         dictionary['updated_at'] = self.updated_at.isoformat()
+        dictionary["__class__"] = self.__class__.__name__
         return dictionary
 
     def delete(self):
         """ deletes the current instance from the storage """
         models.storage.delete(self)
-
-    def __str__(self):
-        """Returns a string representation of the instance"""
-        cls = (str(type(self)).split('.')[-1]).split('\'')[0]
-        return '[{}] ({}) {}'.format(cls, self.id, self.__dict__)

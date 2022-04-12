@@ -118,30 +118,39 @@ class HBNBCommand(cmd.Cmd):
         command = args.split()
         class_name = command[0]
 
-        if len(args) == 0:
+        if not args:
             print("** class name missing **")
             return
-        elif class_name in HBNBCommand.classes:
-            new_instance = eval(class_name)()
-            if len(args) > 1:
-                for e in command[1:]:
-                    attr_name, val = e.split("=")
-                    if val == '':
-                        continue
-                    if val[0] == '"' and val[len(val)-1] == '"':
-                        val = val.strip('"')
-                        val = val.replace("_", " ")
-                        val = val.replace('"', '\"')
-                    elif("." in val):
-                        val = float(val)
-                    else:
-                        val = int(val)
-                    setattr(new_instance, attr_name, val)
-            storage.new(new_instance)
-            print(new_instance.id)
-            storage.save()
-        else:
+
+        if class_name not in HBNBCommand.classes:
             print("** class doesn't exist **")
+            return
+
+        if class_name in HBNBCommand.classes:
+            dictionary = {}
+            if len(args) == 1:
+                new_instance = HBNBCommand.classes[class_name]()
+                new_instance.save()
+                print(new_instance.id)
+            else:
+                for i in args:
+                    if "=" in i:
+                        key_value_list = i.split('=')
+                        key = key_value_list[0]
+                        val = key_value_list[1]
+                        if val[0] and val[-1] == '"':
+                            val = val[1:-1]
+                            if '_' in val:
+                                val = val.replace('_', ' ')
+                        else:
+                            val = eval(val)
+
+                        dictionary[key] = val
+
+                new_instance = HBNBCommand.classes[class_name]()
+                new_instance.__dict__.update(dictionary)
+                new_instance.save()
+                print(new_instance.id)
 
     def help_create(self):
         """ Help information for the create method """

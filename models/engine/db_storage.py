@@ -41,7 +41,7 @@ class DBStorage:
     def all(self, cls=None):
         """Returns a dictionary of models currently in storage"""
         obj_dict = {}
-        if (cls is None):
+        if cls is None:
             for val in objects.values():
                 for o in self.__session.query(val):
                     key = o.__class__.__name__ + '.' + o.id
@@ -52,8 +52,8 @@ class DBStorage:
                 obj_dict[key] = o
         return obj_dict
 
-    def name(self, obj):
-        ''' Adds a name '''
+    def new(self, obj):
+        ''' Adds new object '''
         self.__session.add(obj)
 
     def save(self):

@@ -30,6 +30,65 @@ class HBNBCommand(cmd.Cmd):
         'latitude': float, 'longitude': float
     }
 
+    def do_create(self, args):
+        '''Creates an instance of the specified class\n'''
+        arg_list = args.split(" ")
+        class_name = arg_list[0]
+        if len(args) == 0:
+            print("** class name missing **")
+        elif class_name in HBNBCommand.classes:
+            tmp_new_obj = eval(class_name)()
+            if len(arg_list) > 1:
+                for elements in arg_list[1:]:
+                    attr_name, val = elements.split("=")
+                    if val == '':
+                        continue
+                    if val[0] == '"' and val[len(val)-1] == '"':
+                        val = val.strip('"')
+                        val = val.replace('_', ' ')
+                        val = val.replace('"', '\"')
+                    elif("." in val):
+                        val = float(val)
+                    else:
+                        val = int(val)
+                    setattr(tmp_new_obj, attr_name, val)
+            storage.new(tmp_new_obj)
+            print(tmp_new_obj.id)
+            storage.save()
+
+        else:
+            print("** class doesn't exist **")
+
+    def default(self, arg):
+        '''Runs class commands: <class name>.command()'''
+        arg_list = arg.split('.')
+        if len(arg_list) < 2:
+            print("*** Unknown Syntax", arg)
+            return
+        else:
+            if arg_list[0] in HBNBCommand.classes:
+                if arg_list[1] == "all()":
+                    self.do_all(arg_list[0])
+                elif arg_list[1] == "count()":
+                    self.do_count(arg_list[0])
+                elif arg_list[1][0:4] == "show":
+                    if len(arg_list[1]) > 6:
+                        try:
+                            self.do_show(arg_list[0] + " " + arg_list[1][5:-1])
+                        except:
+                            print("** no instance found **")
+                    else:
+                        print("** instance id missing **")
+                elif arg_list[1][0:7] == "destroy":
+                    if len(arg_list[1]) > 9:
+                        try:
+                            self.do_destroy(arg_list[0] + " " +
+                                            arg_list[1][8:-1])
+                        except:
+                            print("** no instance found **")
+                    else:
+                        print("** instance id missing **")
+
     def preloop(self):
         """Prints if isatty is false"""
         if not sys.__stdin__.isatty():
@@ -113,45 +172,6 @@ class HBNBCommand(cmd.Cmd):
         """ Overrides the emptyline method of CMD """
         pass
 
-    def do_create(self, args):
-        """ Create an object of any class"""
-        command = args.split()
-        class_name = command[0]
-
-        if not args:
-            print("** class name missing **")
-            return
-
-        if class_name not in HBNBCommand.classes:
-            print("** class doesn't exist **")
-            return
-
-        if class_name in HBNBCommand.classes:
-            dictionary = {}
-            if len(args) == 1:
-                new_instance = HBNBCommand.classes[class_name]()
-                new_instance.save()
-                print(new_instance.id)
-            else:
-                for i in args:
-                    if "=" in i:
-                        key_value_list = i.split('=')
-                        key = key_value_list[0]
-                        val = key_value_list[1]
-                        if val[0] and val[-1] == '"':
-                            val = val[1:-1]
-                            if '_' in val:
-                                val = val.replace('_', ' ')
-                        else:
-                            val = eval(val)
-
-                        dictionary[key] = val
-
-                new_instance = HBNBCommand.classes[class_name]()
-                new_instance.__dict__.update(dictionary)
-                new_instance.save()
-                print(new_instance.id)
-
     def help_create(self):
         """ Help information for the create method """
         print("Creates a class of any type")
@@ -223,23 +243,23 @@ class HBNBCommand(cmd.Cmd):
         print("Destroys an individual instance of a class")
         print("[Usage]: destroy <className> <objectId>\n")
 
-    def do_all(self, args):
-        """ Shows all objects, or all objects of a class"""
-        print_list = []
-
-        if args:
-            args = args.split(' ')[0]  # remove possible trailing args
-            if args not in HBNBCommand.classes:
-                print("** class doesn't exist **")
-                return
-            for k, v in storage._FileStorage__objects.items():
-                if k.split('.')[0] == args:
-                    print_list.append(str(v))
+    def do_all(self, arg):
+        '''
+        Prints all instances based or not on the class name
+        '''
+        all_objs = storage.all()
+        if len(arg) == 0:
+            for obj_id in all_objs.keys():
+                obj = all_objs[obj_id]
+                print(obj)
         else:
-            for k, v in storage._FileStorage__objects.items():
-                print_list.append(str(v))
-
-        print(print_list)
+            if arg not in self.classes.keys():
+                print("** class doesn't exist **")
+            else:
+                leng = len(arg)
+                for key, val in all_objs.items():
+                    if key[0:leng] == arg:
+                        print(val)
 
     def help_all(self):
         """ Help information for the all command """

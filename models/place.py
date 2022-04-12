@@ -37,7 +37,7 @@ class Place(BaseModel, Base):
 
         @property
         def reviews(self):
-            """Reviews getter"""
+            """Getter"""
             rlist = []
             allr = models.storage.all(Review)
             for r in allr.values():

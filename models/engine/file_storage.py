@@ -1,8 +1,13 @@
 #!/usr/bin/python3
 """This module defines a class to manage file storage for hbnb clone"""
 import json
-
-from requests import delete
+from models.base_model import BaseModel
+from models.user import User
+from models.place import Place
+from models.city import City
+from models.amenity import Amenity
+from models.state import State
+from models.review import Review
 
 
 class FileStorage:
@@ -15,15 +20,26 @@ class FileStorage:
         if (cls is None):
             return FileStorage.__objects
         else:
-            dictionary = {}
+            CLSdict = {}
             for key, value in FileStorage.__objects.items():
                 if value.__class__ == cls:
-                    dictionary[key] = value
-            return dictionary
+                    CLSdict[key] = value
+            return CLSdict
 
     def new(self, obj):
         """Adds new object to storage dictionary"""
         self.all().update({obj.to_dict()['__class__'] + '.' + obj.id: obj})
+
+    def delete(self, obj=None):
+        """
+        Delete obj from __objects
+        if param obj is None, this method shouldn't do anything
+        """
+        if (obj is None):
+            return
+        obj_key = obj.to_dict()['__class__'] + '.' + obj.id
+        if obj_key in FileStorage.__objects:
+            del FileStorage.__objects[obj_key]
 
     def save(self):
         """Saves storage dictionary to file"""
@@ -36,14 +52,6 @@ class FileStorage:
 
     def reload(self):
         """Loads storage dictionary from file"""
-        from models.base_model import BaseModel
-        from models.user import User
-        from models.place import Place
-        from models.state import State
-        from models.city import City
-        from models.amenity import Amenity
-        from models.review import Review
-
         classes = {
             'BaseModel': BaseModel, 'User': User, 'Place': Place,
             'State': State, 'City': City, 'Amenity': Amenity,
@@ -58,10 +66,5 @@ class FileStorage:
         except FileNotFoundError:
             pass
 
-    def delete(self, obj=None):
-        """ deletes objects from __objects if it's inside """
-        if (obj is None):
-            return
-        key = obj.to_dict()['__class__'] + '.' + obj.id
-        if key in FileStorage.__objects:
-            del FileStorage.__objects[key]
+    def close(self):
+        self.reload()

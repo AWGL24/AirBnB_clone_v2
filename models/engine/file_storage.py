@@ -19,11 +19,10 @@ class FileStorage:
         """Returns a dictionary of models currently in storage"""
         if (cls is None):
             return FileStorage.__objects
-        else:
-            CLSdict = {}
-            for key, value in FileStorage.__objects.items():
-                if value.__class__ == cls:
-                    CLSdict[key] = value
+        CLSdict = {}
+        for key, value in FileStorage.__objects.items():
+            if value.__class__ == cls:
+                CLSdict[key] = value
             return CLSdict
 
     def new(self, obj):
@@ -67,4 +66,5 @@ class FileStorage:
             pass
 
     def close(self):
+        """ Deserialize Json to objects """
         self.reload()

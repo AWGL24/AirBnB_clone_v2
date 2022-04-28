@@ -2,9 +2,10 @@
 # Bash script that sets up your web servers for the deployment of web_static
 
 # install Nginx if it not already installed
-sudo apt-get -y update
+sudo apt-get update
 sudo apt-get -y upgrade
 sudo apt-get -y install nginx
+sudo ufw allow 'Nginx HTTP'
 
 # create folders if they don't already exist
 mkdir -p /data/web_static/releases/test/
@@ -19,16 +20,16 @@ echo "
 <body>
 Holberton School
 </body>
-</html> " > /data/web_static/releases/test/index.html
+</html> " | sudo tee /data/web_static/releases/test/index.html
 
 # created symlink
 ln -sf /data/web_static/releases/test/ /data/web_static/current
 
 # Gived ownership of data folder to ubuntu user and group
-chown -hR ubuntu:ubuntu /data/
+sudo chown -hR ubuntu:ubuntu /data/
 
 # Updates rge Nginx config to serve the content
-sed -i "40 i \\tlocation /hbnb_static/ {\n\t\talias /data/web_static/current/;\n\t}\n" /etc/nginx/sites-available/default
+sed -i "40 i \n\tlocation /hbnb_static/ {\n\t\talias /data/web_static/current/;\n\t}\n" /etc/nginx/sites-available/default
 
 # restarts nginx for the update to take effect
 sudo service nginx restart

@@ -1,7 +1,6 @@
 #!/usr/bin/python3
 ''' python sript that starts a Flask web application '''
 
-from ctypes.wintypes import INT
 from flask import Flask
 
 app = Flask(__name__)

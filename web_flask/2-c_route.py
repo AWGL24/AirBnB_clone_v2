@@ -1,7 +1,6 @@
 #!/usr/bin/python3
 ''' python sript that starts a Flask web application '''
 
-from cgitb import text
 from flask import Flask
 
 app = Flask(__name__)
